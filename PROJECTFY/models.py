@@ -1,6 +1,7 @@
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ARRAY
+
 db = SQLAlchemy()
 
 def my_db(app):
@@ -45,9 +46,9 @@ class Artist(db.Model):
     website_link = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean, default=False, nullable=False)
     seeking_description = db.Column(db.String(120), nullable=False)    
-    noofalbum = db.Column(db.Integer, nullable=False)
-    nameyear = db.Column(db.String(500), nullable=False)
-    albumtrack = db.Column(db.String(500), nullable=False)
+    noofalbum = db.Column(db.Integer)
+    nameyear = db.Column(db.String(500))
+    albumtrack = db.Column(db.String(500))
     shows= db.relationship('Shows', backref='Artist', lazy=True,cascade="save-update, merge, delete")
 
     def __repr__(self):

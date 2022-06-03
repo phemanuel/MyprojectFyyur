@@ -1,5 +1,7 @@
 from datetime import datetime
+from email.policy import default
 from http.client import LENGTH_REQUIRED
+from unittest.mock import DEFAULT
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
 from wtforms.validators import DataRequired, AnyOf, URL
@@ -238,13 +240,13 @@ class ArtistForm(Form):
             'seeking_description'
      )
     noofalbum = StringField(
-            'noofalbum'
+            'noofalbum', default='0'
      )
     nameyear= StringField(
-            'nameyear'
+            'nameyear', default='N/A'
      )
     albumtrack = StringField(
-            'albumtrack'
+            'albumtrack', default='N/A'
      )
 
 

@@ -61,9 +61,8 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-  rvenues = Venue.query.order_by(db.asc(Venue.id)).limit(6).all()
-  rartists = Artist.query.order_by(db.asc(Artist.id)).limit(6).all()
-  return render_template('pages/home.html',lvenue = rvenues, lartist = rartists)
+  
+  return render_template('pages/home.html')
 
 
 #  Venues
@@ -86,6 +85,7 @@ def venues():
               'num_upcoming_shows': len(db.session.query(Shows).filter(Shows.start_time > datetime.now()).all())
           })
           vdata.append({
+              'id': venue.id,
               'city': venue.city,
               'state': venue.state,
               'venues': data
@@ -116,21 +116,26 @@ def show_venue(venue_id):
   # TODO: replace with real venue data from the venues table, using venue_id
  
 # Query and get results---------------------
-  venue = Venue.query.get(venue_id)
-  showsd = venue.shows
-  pshow = []
-  ushow = []  
-  for show in showsd:
-    sinfo ={
-      "artist_id": show.artist_id,
-      "artist_name": show.Artist.name,
-      "artist_image_link": show.Artist.image_link,
-      "start_time": show.start_time
-    }
-    if show.start_time > datetime.now():
-      ushow.append(sinfo)
-    else:
-      pshow.append(sinfo)
+  pshows = []
+  ushows = [] 
+  venue = Venue.query.filter(Venue.id == venue_id).first()
+  pshow = db.session.query(Shows).filter(Shows.venue_id == venue_id).filter(Shows.start_time < datetime.now()).join(Artist, Shows.artist_id == Artist.id).all()
+  ushow = db.session.query(Shows).filter(Shows.venue_id == venue_id).filter(Shows.start_time > datetime.now()).join(Artist, Shows.artist_id == Artist.id).all()
+  for show in pshow:
+      pshows.append({
+          "artist_id": show.artist_id,
+          "artist_name": show.Artist.name,
+          "artist_image_link": show.Artist.image_link,
+          "start_time": show.start_time
+      })
+  for show in ushow:
+    ushows.append({
+        "artist_id": show.artist_id,
+        "artist_name": show.Artist.name,
+        "artist_image_link": show.Artist.image_link,
+        "start_time": show.start_time
+    })
+
 
   vdatas={
     "id": venue.id,
@@ -145,8 +150,8 @@ def show_venue(venue_id):
     "seeking_talent": venue.seeking_talent,
     "seeking_description": venue.seeking_description,
     "image_link": venue.image_link,
-    "past_shows": pshow,
-    "upcoming_shows": ushow,
+    "past_shows": pshows,
+    "upcoming_shows": ushows,
     "past_shows_count": len(pshow),
     "upcoming_shows_count": len(ushow)
   }
@@ -197,28 +202,29 @@ def create_venue_submission():
       flash('Venue '  + name + ' was successfully listed!')      
   return render_template('/pages/home.html')
 
-@app.route('/venues/<int:venue_id>', methods=['POST'])
+@app.route('/venues/<int:venue_id>/DELETE', methods=['GET'])
 def delete_venue(venue_id):
-  #venue_id = request.form.get('venue_id')
-  vdel = Venue.query.get(venue_id)
-  vname = vdel.name
-  error=False
+ 
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-  try:     
-    db.session.delete(vdel)
+   error = False
+   try:
+    vdelete = Venue.query.get(venue_id)
+    db.session.delete(vdelete)
     db.session.commit()
-  except:
+   except:
+    error = True    
     db.session.rollback()
-  finally:
+    
+   finally: 
     db.session.close()
-  if  error == True:
+   if  error == True:
     # Unsuccessful record deletion
-      flash('An error occurred. Venue ' + vname +  'could not be deleted.')
-  else:      
+      flash('An error occurred. Venue could not be deleted.')
+   else:      
     # Successful record deletion
-      flash('Venue ' + vname +  'was succesfully deleted!')      
-  return render_template('/pages/home.html')  
+      flash('Venue was succesfully deleted!')      
+   return render_template('/pages/home.html')  
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
   
@@ -228,7 +234,7 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  artist= Artist.query.order_by(db.asc(Artist.id)).all()
+  artist= Artist.query.all()
   return render_template('pages/artists.html', artists=artist)
 
 @app.route('/artists/search', methods=['POST'])
@@ -255,23 +261,26 @@ def search_artists():
 def show_artist(artist_id):
   # shows the artist page with the given artist_id
   # TODO: replace with real artist data from the artist table, using artist_id
-  current_time = datetime.now()
-  artist = Artist.query.get(artist_id)
-  showsd = artist.shows
-  pshow = []
-  ushow = []
- 
-  for show in showsd:
-   sinfo={
-      "venue_id": show.venue_id,
-      "venue_name": show.Venue.name,
-      "venue_image_link": show.Venue.image_link,
-      "start_time": show.start_time
-    } 
-   if show.start_time > current_time:
-     ushow.append(sinfo)     
-   else:
-     pshow.append(sinfo) 
+  pshows = []
+  ushows = [] 
+  artist = Artist.query.filter(Artist.id == artist_id).first()
+  pshow = db.session.query(Shows).filter(Shows.artist_id == artist_id).filter(Shows.start_time < datetime.now()).join(Venue, Shows.venue_id == Venue.id).all()
+  ushow = db.session.query(Shows).filter(Shows.artist_id == artist_id).filter(Shows.start_time > datetime.now()).join(Venue, Shows.venue_id == Venue.id).all()
+  for show in pshow:
+      pshows.append({
+        "venue_id": show.venue_id,
+        "venue_name": show.Venue.name,
+        "venue_image_link": show.Venue.image_link,
+        "start_time": show.start_time
+      })
+  for show in ushow:
+    ushows.append({
+        "venue_id": show.venue_id,
+        "venue_name": show.Venue.name,
+        "venue_image_link": show.Venue.image_link,
+        "start_time": show.start_time
+    })
+  
   adata = {
      "id": artist.id,
      "name": artist.name,
@@ -287,8 +296,8 @@ def show_artist(artist_id):
     "noofalbum": artist.noofalbum,
     "nameyear": artist.nameyear,
     "albumtrack": artist.albumtrack,
-    "past_shows": pshow,
-    "upcoming_shows": ushow,
+    "past_shows": pshows,
+    "upcoming_shows": ushows,
     "past_shows_count": len(pshow),
     "upcoming_shows_count": len(ushow)
   }
@@ -458,23 +467,18 @@ def create_artist_submission():
 def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
-  current_time = datetime.now()   
   sdata = []
-  ashow = Shows.query.order_by(db.desc(Shows.start_time)).all()
-
+  ashow = Shows.query.join(Venue, Venue.id == Shows.venue_id).join(Artist, Artist.id == Shows.artist_id).all()
   for show in ashow:
-    artistm = Artist.query.get(show.artist_id)
-    venuem = Venue.query.get(show.venue_id)    
-  
     sdata.append({
         "venue_id": show.venue_id,
-        "venue_name": venuem.name,
+        "venue_name": show.Venue.name,
         "artist_id": show.artist_id,
-        "artist_name": artistm.name,
-        "artist_image_link": artistm.image_link,
+        "artist_name": show.Artist.name,
+        "artist_image_link": show.Artist.image_link,
         "start_time": show.start_time
-      })
-  
+    })
+   
   return render_template('pages/shows.html', shows=sdata)
 
 @app.route('/shows/create')
