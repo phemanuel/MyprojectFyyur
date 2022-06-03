@@ -1,0 +1,58 @@
+{% extends 'layouts/main.html' %}
+{% block title %}Fyyur{% endblock %}
+{% block content %}
+<div class="row">
+	<div class="col-sm-6">
+		<h1>Fyyur 🔥</h1>
+		<p class="lead">Where musical artists meet musical venues.</p>
+		<h3>
+			<a href="/venues"><button class="btn btn-primary btn-lg">Find a venue</button></a>
+			<a href="/venues/create"><button class="btn btn-default btn-lg">Post a venue</button></a>
+		</h3>
+		<h3>
+			<a href="/artists"><button class="btn btn-primary btn-lg">Find an artist</button></a>
+			<a href="/artists/create"><button class="btn btn-default btn-lg">Post an artist</button></a>
+		</h3>
+		<p class="lead">Publicize about your show for free.</p>
+		<h3>
+			<a href="/shows/create"><button class="btn btn-default btn-lg">Post a show</button></a>
+		</h3>
+
+		<table width="100%" border="0" cellpadding="4" cellspacing="4">
+			<tr>
+			  <td width="48%"><h4><strong>Recent Venues Listed&nbsp;&nbsp;&nbsp;</strong></h4></td>
+			  <td width="52%"><h4><strong>Recent Artists Listed</strong> </h4></td>
+			</tr>
+			<tr>
+			  <td>
+				{%for venue in lvenue %}
+				<table width="90%" border="0" cellpadding="3" cellspacing="3">
+				<tr>
+				  <td valign="top"><h5><strong>{{ venue.name }}</strong></h5>
+					<h5>ID: {{ venue.id }}</h5>					
+					<h5><strong><a href="/venues/{{ venue.id }}">View</a></strong></h5></td>
+				</tr>
+			  </table>
+			{% endfor %}
+			</td>
+			  <td>
+				{%for artist in lartist %}
+				<table width="100%" border="0" cellpadding="3" cellspacing="3">
+				<tr>
+				  <td valign="top"><h5><strong>{{ artist.name }}</strong></h5>
+					<h5>ID: {{ artist.id }}</h5>
+					<h5><strong><a href="/artists/{{ artist.id }}">View</a></strong></h5></td>
+				</tr>
+			  </table>
+			{% endfor %}
+			</td>
+			</tr>
+		  </table>
+	</div>
+
+	<div class="col-sm-6 hidden-sm hidden-xs">
+		<img id="front-splash" src="{{ url_for('static',filename='img/front-splash.jpg') }}" alt="Front Photo of Musical Band" />
+	</div>
+</div>
+
+{% endblock %}
