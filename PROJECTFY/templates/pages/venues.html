@@ -2,7 +2,7 @@
 {% block title %}Fyyur | Venues{% endblock %}
 {% block content %}
 {% for venue in venues %}
-<form method="post" action="/venues/{{ venue.id }}">
+<form ">
 	<h4>ID : {{ venue.id }}</h4>
 	<h3>{{ venue.city }}, {{ venue.state }}</h3>	
 	<ul class="items">
@@ -17,7 +17,7 @@
 		</li>	
 		{% endfor %}
 		</ul>
-		<button class="delete-venue" data-id="{{ venue.id }}">Delete</button>
+		<h5><strong><a href="/venues/{{ venue.id }}/DELETE">Delete</a></strong></h5>
 </form>
 	
 {% endfor %}
